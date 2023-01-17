@@ -55,8 +55,6 @@ For this reason there is another entry point `RunWithExternalLoop`.
 This function of the library returns a start and end function that should be called
 when the application has started and will end, to loop in appropriate features.
 
-See [full API](https://pkg.go.dev/fyne.io/systray?tab=doc) as well as [CHANGELOG](https://github.com/fyne-io/systray/tree/master/CHANGELOG.md).
-
 Note: this package requires cgo, so make sure you set `CGO_ENABLED=1` before building.
 
 ## Try the example app!
@@ -77,7 +75,7 @@ go run -ldflags "-H=windowsgui" .
 
 Now look for *Awesome App* in your menu bar!
 
-![Awesome App screenshot](example/screenshot.png)
+![Awesome App screenshot](example/demo.png)
 
 ## Platform notes
 
@@ -91,15 +89,13 @@ Search for "StatusNotifierItems XEmbedded" in your package manager.
 
 ### Windows
 
-* To avoid opening a console at application startup, use "fyne package" for your app or manually use these compile flags:
-
 ```sh
 go build -ldflags -H=windowsgui
 ```
 
 ### macOS
 
-On macOS, you will need to create an application bundle to wrap the binary; simply use "fyne package" or add folders with the following minimal structure and assets:
+On macOS, you will need to create an application bundle to wrap the binary; simply use add folders with the following minimal structure and assets:
 
 ```
 SystrayApp.app/
