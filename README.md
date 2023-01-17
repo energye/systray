@@ -27,6 +27,16 @@ func onReady() {
 	systray.SetIcon(icon.Data)
 	systray.SetTitle("Awesome App")
 	systray.SetTooltip("Pretty awesome超级棒")
+	systray.SetOnClick(func() {
+		fmt.Println("SetOnClick")
+	})
+	systray.SetOnDClick(func() {
+		fmt.Println("SetOnDClick")
+	})
+	systray.SetOnRClick(func(menu systray.IMenu) {
+		menu.ShowMenu()
+		fmt.Println("SetOnRClick")
+	})
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 
 	// Sets the icon of a menu item.
