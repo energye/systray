@@ -36,14 +36,13 @@ func MainRun() {
 func addQuitItem() {
 	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
 	mQuit.Enable()
-	go func() {
-		<-mQuit.ClickedCh
+	mQuit.Click(func() {
 		fmt.Println("Requesting quit")
 		//systray.Quit()
 		//systray.Quit()// macos error
 		//end() // macos error
 		fmt.Println("Finished quitting")
-	}()
+	})
 }
 
 func onReady() {
@@ -62,9 +61,7 @@ func onReady() {
 		fmt.Println("SetOnRClick")
 	})
 	systray.CreateMenu()
-	//return
 	addQuitItem()
-
 	systray.SetTemplateIcon(icon.Data, icon.Data)
 	mChange := systray.AddMenuItem("Change Me", "Change Me")
 	mChecked := systray.AddMenuItemCheckbox("Checked", "Check Me", true)
@@ -88,42 +85,45 @@ func onReady() {
 			subMenuBottom2.Hide()
 			mEnabled.Hide()
 			shown = false
+			mEnabled.Disable()
 		} else {
 			subMenuBottom.Uncheck()
 			subMenuBottom2.Show()
 			mEnabled.Show()
+			mEnabled.Enable()
 			shown = true
 		}
 	}
 	mReset := systray.AddMenuItem("Reset", "Reset all items")
 
-	// We can manipulate the systray in other goroutines
-	go func() {
-		for {
-			select {
-			case <-mChange.ClickedCh:
-				mChange.SetTitle("I've Changed")
-			case <-mChecked.ClickedCh:
-				if mChecked.Checked() {
-					mChecked.Uncheck()
-					mChecked.SetTitle("Unchecked")
-				} else {
-					mChecked.Check()
-					mChecked.SetTitle("Checked")
-				}
-			case <-mEnabled.ClickedCh:
-				mEnabled.SetTitle("Disabled")
-				mEnabled.Disable()
-			case <-subMenuBottom2.ClickedCh:
-				panic("panic button pressed")
-			case <-subMenuBottom.ClickedCh:
-				toggle()
-			case <-mReset.ClickedCh:
-				systray.ResetMenu()
-				addQuitItem()
-			case <-mToggle.ClickedCh:
-				toggle()
-			}
+	mChange.Click(func() {
+		mChange.SetTitle("I've Changed")
+	})
+	mChecked.Click(func() {
+		if mChecked.Checked() {
+			mChecked.Uncheck()
+			mChecked.SetTitle("Unchecked")
+		} else {
+			mChecked.Check()
+			mChecked.SetTitle("Checked")
 		}
-	}()
+	})
+	mEnabled.Click(func() {
+		mEnabled.SetTitle("Disabled")
+		fmt.Println("mEnabled.Disabled()", mEnabled.Disabled())
+		mEnabled.Disable()
+	})
+	subMenuBottom2.Click(func() {
+		panic("panic button pressed")
+	})
+	subMenuBottom.Click(func() {
+		toggle()
+	})
+	mReset.Click(func() {
+		systray.ResetMenu()
+		addQuitItem()
+	})
+	mToggle.Click(func() {
+		toggle()
+	})
 }
