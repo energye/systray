@@ -97,8 +97,8 @@ func SetOnClick(fn func()) {
 }
 
 //设置托盘鼠标左键双击事件
-func SetOnDClick(fn func()) {
-	setOnDClick(fn)
+func SetOnDClick(fn func(menu IMenu)) {
+	SetOnDClick(fn)
 }
 
 //设置托盘鼠标右键事件反馈回调
