@@ -76,8 +76,8 @@ func setInternalLoop(internal bool) {
 }
 
 var (
-	onClick         func()
-	onDClick        func()
+	onClick         func(menu IMenu)
+	onDClick        func(menu IMenu)
 	onRClick        func(menu IMenu)
 	dClickTime      int64
 	isEnableOnClick = false
@@ -222,7 +222,7 @@ func systray_on_click() {
 		if nowMilli-dClickTime < dClickTimeMinInterval {
 			dClickTime = dClickTimeMinInterval
 			if onDClick != nil {
-				onDClick()
+				onDClick(st)
 				return
 			}
 		} else {
@@ -230,7 +230,7 @@ func systray_on_click() {
 		}
 	}
 	if onClick != nil {
-		onClick()
+		onClick(st)
 	}
 }
 

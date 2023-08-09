@@ -92,12 +92,12 @@ func SetDClickTimeMinInterval(value int64) {
 }
 
 //设置托盘鼠标左键点击事件
-func SetOnClick(fn func()) {
+func SetOnClick(fn func(menu IMenu)) {
 	setOnClick(fn)
 }
 
 //设置托盘鼠标左键双击事件
-func SetOnDClick(fn func()) {
+func SetOnDClick(fn func(menu IMenu)) {
 	setOnDClick(fn)
 }
 

@@ -237,8 +237,8 @@ type winTray struct {
 
 	initialized *abool.AtomicBool
 
-	onClick  func()
-	onDClick func()
+	onClick  func(menu IMenu)
+	onDClick func(menu IMenu)
 	onRClick func(menu IMenu)
 }
 
@@ -296,11 +296,11 @@ var wt = winTray{
 	initialized: abool.New(),
 }
 
-func (t *winTray) setOnClick(fn func()) {
+func (t *winTray) setOnClick(fn func(menu IMenu)) {
 	t.onClick = fn
 }
 
-func (t *winTray) setOnDClick(fn func()) {
+func (t *winTray) setOnDClick(fn func(menu IMenu)) {
 	t.onDClick = fn
 }
 
@@ -351,11 +351,11 @@ func (t *winTray) wndProc(hWnd windows.Handle, message uint32, wParam, lParam ui
 			}
 		case WM_LBUTTONUP:
 			if t.onClick != nil {
-				t.onClick()
+				t.onClick(t)
 			}
 		case WM_LBUTTONDBLCLK:
 			if t.onDClick != nil {
-				t.onDClick()
+				t.onDClick(t)
 			}
 		}
 	case t.wmTaskbarCreated: // on explorer.exe restarts
@@ -1058,11 +1058,11 @@ func addOrUpdateMenuItem(item *MenuItem) {
 	}
 }
 
-func setOnClick(fn func()) {
+func setOnClick(fn func(menu IMenu)) {
 	wt.setOnClick(fn)
 }
 
-func setOnDClick(fn func()) {
+func setOnDClick(fn func(menu IMenu)) {
 	wt.setOnDClick(fn)
 }
 

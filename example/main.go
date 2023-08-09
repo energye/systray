@@ -50,10 +50,12 @@ func onReady() {
 	systray.SetTemplateIcon(icon.Data, icon.Data)
 	systray.SetTitle("Energy Sys Tray")
 	systray.SetTooltip("Energy tooltip")
-	systray.SetOnClick(func() {
+	systray.SetOnClick(func(menu systray.IMenu) {
+		menu.ShowMenu()
 		fmt.Println("SetOnClick")
 	})
-	systray.SetOnDClick(func() {
+	systray.SetOnDClick(func(menu systray.IMenu) {
+		menu.ShowMenu()
 		fmt.Println("SetOnDClick")
 	})
 	systray.SetOnRClick(func(menu systray.IMenu) {
