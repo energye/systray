@@ -41,13 +41,18 @@ func onReady() {
 	systray.SetTitle("Energy Sys Tray")
 	systray.SetTooltip("Energy tooltip")
 	systray.SetOnClick(func(menu systray.IMenu) {
-		menu.ShowMenu()
+		if menu != nil { // menu for linux nil
+			menu.ShowMenu()
+		}
 		fmt.Println("SetOnClick")
 	})
 	systray.SetOnDClick(func(menu systray.IMenu) {
-		menu.ShowMenu()
+		if menu != nil { // menu for linux nil
+			menu.ShowMenu()
+		}
 		fmt.Println("SetOnDClick")
 	})
+	// OnRClick linux not impl
 	systray.SetOnRClick(func(menu systray.IMenu) {
 		menu.ShowMenu()
 		fmt.Println("SetOnRClick")
