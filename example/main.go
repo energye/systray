@@ -11,17 +11,7 @@ var start func()
 var end func()
 
 func main() {
-	go func() {
-		onExit := func() {
-			now := time.Now()
-			fmt.Println("Exit at", now.String())
-		}
-
-		start, end = systray.RunWithExternalLoop(onReady, onExit) //windows/linux/macos
-		start()
-
-	}()
-	select {}
+	MainRun()
 }
 
 func MainRun() {
@@ -38,7 +28,7 @@ func addQuitItem() {
 	mQuit.Enable()
 	mQuit.Click(func() {
 		fmt.Println("Requesting quit")
-		//systray.Quit()
+		systray.Quit()
 		//systray.Quit()// macos error
 		//end() // macos error
 		fmt.Println("Finished quitting")
