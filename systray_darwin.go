@@ -83,12 +83,12 @@ var (
 	isEnableOnClick = false
 )
 
-func setOnClick(fn func()) {
+func setOnClick(fn func(menu IMenu)) {
 	enableOnClick()
 	onClick = fn
 }
 
-func setOnDClick(fn func()) {
+func setOnDClick(fn func(menu IMenu)) {
 	enableOnClick()
 	onDClick = fn
 }
