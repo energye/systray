@@ -4,15 +4,19 @@ import (
 	"fmt"
 	"github.com/energye/systray"
 	"github.com/energye/systray/icon"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
-
-var start func()
-var end func()
 
 func main() {
 	MainRun()
 }
+
+var start func()
+var end func()
 
 func MainRun() {
 	onExit := func() {
@@ -123,4 +127,24 @@ func onReady() {
 	mToggle.Click(func() {
 		toggle()
 	})
+	// tray icon switch
+	go func() {
+		var b bool
+		// demo: to png full path
+		wd, _ := os.Getwd()
+		wd = strings.Replace(wd, "example", "", -1)
+		wd = filepath.Join(wd, "icon")
+		fmt.Println("wd", wd) // /to/icon/path/icon.png, logo.png
+		icoData, _ := ioutil.ReadFile(filepath.Join(wd, "icon.png"))
+		logoData, _ := ioutil.ReadFile(filepath.Join(wd, "logo.png"))
+		for true {
+			time.Sleep(time.Second * 1)
+			b = !b
+			if b {
+				systray.SetIcon(logoData)
+			} else {
+				systray.SetIcon(icoData)
+			}
+		}
+	}()
 }
