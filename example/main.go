@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -135,8 +136,12 @@ func onReady() {
 		wd = strings.Replace(wd, "example", "", -1)
 		wd = filepath.Join(wd, "icon")
 		fmt.Println("wd", wd) // /to/icon/path/icon.png, logo.png
-		icoData, _ := ioutil.ReadFile(filepath.Join(wd, "icon.png"))
-		logoData, _ := ioutil.ReadFile(filepath.Join(wd, "logo.png"))
+		var ext = ".png"
+		if runtime.GOOS == "windows" {
+			ext = ".ico" // windows .ico
+		}
+		icoData, _ := ioutil.ReadFile(filepath.Join(wd, "icon"+ext))
+		logoData, _ := ioutil.ReadFile(filepath.Join(wd, "logo"+ext))
 		for true {
 			time.Sleep(time.Second * 1)
 			b = !b
