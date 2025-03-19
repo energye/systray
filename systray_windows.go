@@ -250,24 +250,23 @@ func (t *winTray) isReady() bool {
 // Loads an image from file and shows it in tray.
 // Shell_NotifyIcon: https://msdn.microsoft.com/en-us/library/windows/desktop/bb762159(v=vs.85).aspx
 func (t *winTray) setIcon(src string) error {
-	if !wt.isReady() {
-		return ErrTrayNotReadyYet
-	}
-
-	const NIF_ICON = 0x00000002
-
-	h, err := t.loadIconFrom(src)
-	if err != nil {
-		return err
-	}
-
-	t.muNID.Lock()
-	defer t.muNID.Unlock()
-	t.nid.Icon = h
-	t.nid.Flags |= NIF_ICON
-	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
-
-	return t.nid.modify()
+    if !wt.isReady() {
+        return ErrTrayNotReadyYet
+    }
+    const NIF_ICON = 0x00000002
+    h, err := t.loadIconFrom(src)
+    if err != nil {
+        return err
+    }
+    t.muNID.Lock()
+    defer t.muNID.Unlock()
+    if t.nid.Icon != 0 {
+        pDestroyIcon.Call(uintptr(t.nid.Icon))
+    }
+    t.nid.Icon = h
+    t.nid.Flags |= NIF_ICON
+    t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
+    return t.nid.modify()
 }
 
 // Sets tooltip on icon.
