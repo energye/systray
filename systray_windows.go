@@ -36,38 +36,39 @@ var (
 	s32              = windows.NewLazySystemDLL("Shell32.dll")
 	pShellNotifyIcon = s32.NewProc("Shell_NotifyIconW")
 
-	u32                    = windows.NewLazySystemDLL("User32.dll")
-	pCreateMenu            = u32.NewProc("CreateMenu")
-	pCreatePopupMenu       = u32.NewProc("CreatePopupMenu")
-	pCreateWindowEx        = u32.NewProc("CreateWindowExW")
-	pDefWindowProc         = u32.NewProc("DefWindowProcW")
-	pRemoveMenu            = u32.NewProc("RemoveMenu")
-	pDestroyWindow         = u32.NewProc("DestroyWindow")
-	pDispatchMessage       = u32.NewProc("DispatchMessageW")
-	pDrawIconEx            = u32.NewProc("DrawIconEx")
-	pGetCursorPos          = u32.NewProc("GetCursorPos")
-	pGetDC                 = u32.NewProc("GetDC")
-	pGetMessage            = u32.NewProc("GetMessageW")
-	pGetSystemMetrics      = u32.NewProc("GetSystemMetrics")
-	pInsertMenuItem        = u32.NewProc("InsertMenuItemW")
-	pLoadCursor            = u32.NewProc("LoadCursorW")
-	pLoadIcon              = u32.NewProc("LoadIconW")
-	pLoadImage             = u32.NewProc("LoadImageW")
-	pPostMessage           = u32.NewProc("PostMessageW")
-	pPostQuitMessage       = u32.NewProc("PostQuitMessage")
-	pRegisterClass         = u32.NewProc("RegisterClassExW")
-	pRegisterWindowMessage = u32.NewProc("RegisterWindowMessageW")
-	pReleaseDC             = u32.NewProc("ReleaseDC")
-	pSetForegroundWindow   = u32.NewProc("SetForegroundWindow")
-	pSetMenuInfo           = u32.NewProc("SetMenuInfo")
-	pSetMenuItemInfo       = u32.NewProc("SetMenuItemInfoW")
-	pShowWindow            = u32.NewProc("ShowWindow")
-	pTrackPopupMenu        = u32.NewProc("TrackPopupMenu")
-	pTranslateMessage      = u32.NewProc("TranslateMessage")
-	pUnregisterClass       = u32.NewProc("UnregisterClassW")
-	pUpdateWindow          = u32.NewProc("UpdateWindow")
-	pDestroyIcon           = u32.NewProc("DestroyIcon")
-	
+	u32                       = windows.NewLazySystemDLL("User32.dll")
+	pCreateIconFromResourceEx = u32.NewProc("CreateIconFromResourceEx")
+	pDestroyIcon              = u32.NewProc("DestroyIcon")
+	pCreateMenu               = u32.NewProc("CreateMenu")
+	pCreatePopupMenu          = u32.NewProc("CreatePopupMenu")
+	pCreateWindowEx           = u32.NewProc("CreateWindowExW")
+	pDefWindowProc            = u32.NewProc("DefWindowProcW")
+	pRemoveMenu               = u32.NewProc("RemoveMenu")
+	pDestroyWindow            = u32.NewProc("DestroyWindow")
+	pDispatchMessage          = u32.NewProc("DispatchMessageW")
+	pDrawIconEx               = u32.NewProc("DrawIconEx")
+	pGetCursorPos             = u32.NewProc("GetCursorPos")
+	pGetDC                    = u32.NewProc("GetDC")
+	pGetMessage               = u32.NewProc("GetMessageW")
+	pGetSystemMetrics         = u32.NewProc("GetSystemMetrics")
+	pInsertMenuItem           = u32.NewProc("InsertMenuItemW")
+	pLoadCursor               = u32.NewProc("LoadCursorW")
+	pLoadIcon                 = u32.NewProc("LoadIconW")
+	pLoadImage                = u32.NewProc("LoadImageW")
+	pPostMessage              = u32.NewProc("PostMessageW")
+	pPostQuitMessage          = u32.NewProc("PostQuitMessage")
+	pRegisterClass            = u32.NewProc("RegisterClassExW")
+	pRegisterWindowMessage    = u32.NewProc("RegisterWindowMessageW")
+	pReleaseDC                = u32.NewProc("ReleaseDC")
+	pSetForegroundWindow      = u32.NewProc("SetForegroundWindow")
+	pSetMenuInfo              = u32.NewProc("SetMenuInfo")
+	pSetMenuItemInfo          = u32.NewProc("SetMenuItemInfoW")
+	pShowWindow               = u32.NewProc("ShowWindow")
+	pTrackPopupMenu           = u32.NewProc("TrackPopupMenu")
+	pTranslateMessage         = u32.NewProc("TranslateMessage")
+	pUnregisterClass          = u32.NewProc("UnregisterClassW")
+	pUpdateWindow             = u32.NewProc("UpdateWindow")
+
 	// ErrTrayNotReadyYet is returned by functions when they are called before the tray has been initialized.
 	ErrTrayNotReadyYet = errors.New("tray not ready yet")
 )
@@ -246,28 +247,6 @@ type winTray struct {
 // isReady checks if the tray as already been initialized. It is not goroutine safe with in regard to the initialization function, but prevents a panic when functions are called too early.
 func (t *winTray) isReady() bool {
 	return t.initialized.IsSet()
-}
-
-// Loads an image from file and shows it in tray.
-// Shell_NotifyIcon: https://msdn.microsoft.com/en-us/library/windows/desktop/bb762159(v=vs.85).aspx
-func (t *winTray) setIcon(src string) error {
-    if !wt.isReady() {
-        return ErrTrayNotReadyYet
-    }
-    const NIF_ICON = 0x00000002
-    h, err := t.loadIconFrom(src)
-    if err != nil {
-        return err
-    }
-    t.muNID.Lock()
-    defer t.muNID.Unlock()
-    if t.nid.Icon != 0 {
-        pDestroyIcon.Call(uintptr(t.nid.Icon))
-    }
-    t.nid.Icon = h
-    t.nid.Flags |= NIF_ICON
-    t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
-    return t.nid.modify()
 }
 
 // Sets tooltip on icon.
@@ -795,6 +774,8 @@ func (t *winTray) getVisibleItemIndex(parent, val uint32) int {
 
 // Loads an image from file to be shown in tray or menu item.
 // LoadImage: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648045(v=vs.85).aspx
+// Loads an image from file to be shown in tray or menu item.
+// LoadImage: https://msdn.microsoft.com/en-us/library/windows/desktop/ms648045(v=vs.85).aspx
 func (t *winTray) loadIconFrom(src string) (windows.Handle, error) {
 	if !wt.isReady() {
 		return 0, ErrTrayNotReadyYet
@@ -978,16 +959,75 @@ func iconBytesToFilePath(iconBytes []byte) (string, error) {
 // SetIcon sets the systray icon.
 // iconBytes should be the content of .ico for windows and .ico/.jpg/.png
 // for other platforms.
+// SetIcon sets the systray icon directly from memory (iconBytes).
 func SetIcon(iconBytes []byte) {
-	iconFilePath, err := iconBytesToFilePath(iconBytes)
-	if err != nil {
-		log.Printf("systray error: unable to write icon data to temp file: %s\n", err)
-		return
-	}
-	if err := wt.setIcon(iconFilePath); err != nil {
+	if err := wt.setIconFromBytes(iconBytes); err != nil {
 		log.Printf("systray error: unable to set icon: %s\n", err)
-		return
 	}
+}
+
+// setIconFromBytes sets the tray icon from a byte slice instead of a file path.
+func (t *winTray) setIconFromBytes(iconBytes []byte) error {
+	if !wt.isReady() {
+		return ErrTrayNotReadyYet
+	}
+	const NIF_ICON = 0x00000002
+
+	h, err := t.createIconFromBytes(iconBytes)
+	if err != nil {
+		return err
+	}
+
+	t.muNID.Lock()
+	defer t.muNID.Unlock()
+	if t.nid.Icon != 0 {
+		res, _, err := pDestroyIcon.Call(uintptr(t.nid.Icon))
+		if res == 0 {
+			log.Printf("systray warning: failed to destroy old icon: %v", err)
+		}
+	}
+	t.nid.Icon = h
+	t.nid.Flags |= NIF_ICON
+	t.nid.Size = uint32(unsafe.Sizeof(*t.nid))
+	err = t.nid.modify()
+	if err != nil {
+		log.Printf("systray error: failed to modify icon: %v", err)
+	}
+	return err
+}
+
+// createIconFromBytes creates an HICON from a byte slice using CreateIconFromResourceEx.
+func (t *winTray) createIconFromBytes(iconBytes []byte) (windows.Handle, error) {
+	if len(iconBytes) == 0 {
+		return 0, windows.ERROR_INVALID_DATA
+	}
+
+	// CreateIconFromResourceEx parameters:
+	// pbIconBits: pointer to the icon data
+	// cbIconBits: size of the icon data
+	// fIcon: TRUE for icon, FALSE for cursor
+	// dwVersion: icon version (0x00030000 for Windows 2000 and later)
+	// cxDesired: desired width (0 for default)
+	// cyDesired: desired height (0 for default)
+	// Flags: LR_DEFAULTSIZE for default size
+	const (
+		LR_DEFAULTSIZE = 0x00000040
+		ICON_VERSION   = 0x00030000
+	)
+
+	res, _, err := pCreateIconFromResourceEx.Call(
+		uintptr(unsafe.Pointer(&iconBytes[0])), // Pointer to icon data
+		uintptr(len(iconBytes)),                // Size of icon data
+		1,                                      // TRUE (icon)
+		ICON_VERSION,                           // Version
+		0,                                      // Width (default)
+		0,                                      // Height (default)
+		LR_DEFAULTSIZE,                         // Flags
+	)
+	if res == 0 {
+		return 0, err
+	}
+	return windows.Handle(res), nil
 }
 
 // SetTemplateIcon sets the systray icon as a template icon (on macOS), falling back

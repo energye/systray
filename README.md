@@ -4,6 +4,11 @@ systray is a cross-platform Go library to place an icon and menu in the notifica
 This repository is a fork of [getlantern/systray](https://github.com/getlantern/systray)
 removing the GTK dependency and support for legacy linux system tray.
 
+## Modified:
+- Fix Windows GDI objects leak.
+- Disable icon cache.
+- Systray icon handling in memory. Not in files.
+
 ## Features
 
 * Supported on Windows, macOS, Linux and many BSD systems
@@ -16,8 +21,8 @@ removing the GTK dependency and support for legacy linux system tray.
 ```go
 package main
 
-import "github.com/energye/systray"
-import "github.com/energye/systray/icon"
+import "github.com/lutischan-ferenc/systray"
+import "github.com/lutischan-ferenc/systray/icon"
 
 func main() {
 	systray.Run(onReady, onExit)
