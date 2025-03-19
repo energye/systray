@@ -4,6 +4,11 @@ systray is a cross-platform Go library to place an icon and menu in the notifica
 This repository is a fork of [getlantern/systray](https://github.com/getlantern/systray)
 removing the GTK dependency and support for legacy linux system tray.
 
+## Modified:
+- Fix Windows GDI objects leak.
+- Disable icon cache.
+- Systray icon handling in memory. Not in files.
+
 ## Features
 
 * Supported on Windows, macOS, Linux and many BSD systems
@@ -16,8 +21,8 @@ removing the GTK dependency and support for legacy linux system tray.
 ```go
 package main
 
-import "github.com/energye/systray"
-import "github.com/energye/systray/icon"
+import "github.com/lutischan-ferenc/systray"
+import "github.com/lutischan-ferenc/systray/icon"
 
 func main() {
 	systray.Run(onReady, onExit)
@@ -111,12 +116,12 @@ If bundling manually, you may want to add one or both of the following to your I
 
 ```xml
 	<!-- avoid having a blurry icon and text -->
-	<key>NSHighResolutionCapable</key>
-	<string>True</string>
+<key>NSHighResolutionCapable</key>
+<string>True</string>
 
-	<!-- avoid showing the app on the Dock -->
-	<key>LSUIElement</key>
-	<string>1</string>
+        <!-- avoid showing the app on the Dock -->
+<key>LSUIElement</key>
+<string>1</string>
 ```
 
 Consult the [Official Apple Documentation here](https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html#//apple_ref/doc/uid/10000123i-CH101-SW1).
