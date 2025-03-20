@@ -6,8 +6,7 @@ removing the GTK dependency and support for legacy linux system tray.
 
 ## Modified:
 - Fix Windows GDI objects leak.
-- Disable icon cache.
-- Systray icon handling in memory. Not in files.
+- Systray icon handling in memory. systray.SetIconFromMemory(pngBytes)
 
 ## Features
 

@@ -67,6 +67,7 @@ var (
 	pUnregisterClass       = u32.NewProc("UnregisterClassW")
 	pUpdateWindow          = u32.NewProc("UpdateWindow")
 	pDestroyIcon           = u32.NewProc("DestroyIcon")
+	pCreateIcon            = u32.NewProc("CreateIconFromResourceEx")
 
 	// ErrTrayNotReadyYet is returned by functions when they are called before the tray has been initialized.
 	ErrTrayNotReadyYet = errors.New("tray not ready yet")
@@ -246,6 +247,47 @@ type winTray struct {
 // isReady checks if the tray as already been initialized. It is not goroutine safe with in regard to the initialization function, but prevents a panic when functions are called too early.
 func (t *winTray) isReady() bool {
 	return t.initialized.IsSet()
+}
+
+// loadIconFromMemory loads an icon from memory bytes using CreateIconFromResourceEx
+func loadIconFromMemory(pngBytes []byte) (windows.Handle, error) {
+	const LR_DEFAULTSIZE = 0x00000040
+
+	// Load the icon from memory
+	hIcon, _, err := pCreateIcon.Call(
+		uintptr(unsafe.Pointer(&pngBytes[0])), // Pointer to the png data
+		uintptr(len(pngBytes)),                // Size of the png data
+		1,                                     // fIcon (1 for icon, 0 for cursor)
+		0x00030000,                            // version
+		0,                                     // cxDesired (0 for default size)
+		0,                                     // cyDesired (0 for default size)
+		LR_DEFAULTSIZE,                        // Flags
+	)
+	if hIcon == 0 {
+		return 0, err
+	}
+	return windows.Handle(hIcon), nil
+}
+
+// SetIconFromMemory sets the systray icon from memory bytes of a png
+func SetIconFromMemory(pngBytes []byte) error {
+	hIcon, err := loadIconFromMemory(pngBytes)
+	if err != nil {
+		log.Printf("systray error: unable to load icon from memory: %s\n", err)
+		return err
+	}
+
+	// Set the icon in the systray
+	const NIF_ICON = 0x00000002
+	wt.muNID.Lock()
+	defer wt.muNID.Unlock()
+	if wt.nid.Icon != 0 {
+		pDestroyIcon.Call(uintptr(wt.nid.Icon))
+	}
+	wt.nid.Icon = hIcon
+	wt.nid.Flags |= NIF_ICON
+	wt.nid.Size = uint32(unsafe.Sizeof(*wt.nid))
+	return wt.nid.modify()
 }
 
 // Loads an image from file and shows it in tray.
