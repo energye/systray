@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/energye/systray"
-	"github.com/energye/systray/icon"
+	"github.com/lutischan-ferenc/systray"
+	"github.com/lutischan-ferenc/systray/icon"
 	"io/ioutil"
 	"os"
 	"path/filepath"

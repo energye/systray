@@ -20,9 +20,9 @@ import (
 	"github.com/godbus/dbus/v5/introspect"
 	"github.com/godbus/dbus/v5/prop"
 
-	"github.com/energye/systray/internal/generated/menu"
-	"github.com/energye/systray/internal/generated/notifier"
 	dbus "github.com/godbus/dbus/v5"
+	"github.com/lutischan-ferenc/systray/internal/generated/menu"
+	"github.com/lutischan-ferenc/systray/internal/generated/notifier"
 )
 
 const (
