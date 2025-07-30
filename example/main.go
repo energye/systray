@@ -29,7 +29,7 @@ func MainRun() {
 }
 
 func addQuitItem() {
-	mQuit := systray.AddMenuItem("Quit", "Quit the whole app")
+	mQuit := systray.AddMenuItem("Quit(退出)", "Quit the whole app")
 	mQuit.Enable()
 	mQuit.Click(func() {
 		fmt.Println("Requesting quit")
