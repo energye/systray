@@ -196,6 +196,9 @@ func enableOnClick() {
 	}
 }
 
+func showNotification(title, message string) {
+}
+
 //export systray_ready
 func systray_ready() {
 	if systrayReady != nil {

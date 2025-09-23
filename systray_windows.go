@@ -76,9 +76,21 @@ var (
 	pTranslateMessage      = u32.NewProc("TranslateMessage")
 	pUnregisterClass       = u32.NewProc("UnregisterClassW")
 	pUpdateWindow          = u32.NewProc("UpdateWindow")
+	pFindWindow            = u32.NewProc("FindWindowW")
 
 	// ErrTrayNotReadyYet is returned by functions when they are called before the tray has been initialized.
 	ErrTrayNotReadyYet = errors.New("tray not ready yet")
+)
+
+// Notification constants
+const (
+	NIM_ADD    = 0x00000000
+	NIM_MODIFY = 0x00000001
+	NIM_DELETE = 0x00000002
+	NIF_INFO   = 0x00000010
+	NIF_TIP    = 0x00000004
+	NIIF_INFO  = 0x00000001
+	WM_USER    = 0x0400
 )
 
 // Contains window class information.
@@ -137,7 +149,6 @@ type notifyIconData struct {
 }
 
 func (nid *notifyIconData) add() error {
-	const NIM_ADD = 0x00000000
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_ADD),
 		uintptr(unsafe.Pointer(nid)),
@@ -149,7 +160,6 @@ func (nid *notifyIconData) add() error {
 }
 
 func (nid *notifyIconData) modify() error {
-	const NIM_MODIFY = 0x00000001
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_MODIFY),
 		uintptr(unsafe.Pointer(nid)),
@@ -161,7 +171,6 @@ func (nid *notifyIconData) modify() error {
 }
 
 func (nid *notifyIconData) delete() error {
-	const NIM_DELETE = 0x00000002
 	res, _, err := pShellNotifyIcon.Call(
 		uintptr(NIM_DELETE),
 		uintptr(unsafe.Pointer(nid)),
@@ -220,6 +229,7 @@ type winTray struct {
 	icon,
 	cursor,
 	window Handle
+	trayIconID uint32
 
 	loadedImages   map[string]Handle
 	muLoadedImages sync.RWMutex
@@ -287,7 +297,6 @@ func (t *winTray) setTooltip(src string) error {
 		return ErrTrayNotReadyYet
 	}
 
-	const NIF_TIP = 0x00000004
 	b, err := syscall.UTF16FromString(src)
 	if err != nil {
 		return err
@@ -409,9 +418,6 @@ func (t *winTray) initInstance() error {
 	)
 	const NIF_MESSAGE = 0x00000001
 
-	// https://msdn.microsoft.com/en-us/library/windows/desktop/ms644931(v=vs.85).aspx
-	const WM_USER = 0x0400
-
 	const (
 		className  = "SystrayClass"
 		windowName = ""
@@ -506,9 +512,10 @@ func (t *winTray) initInstance() error {
 
 	t.muNID.Lock()
 	defer t.muNID.Unlock()
+	t.trayIconID = uint32(os.Getpid())
 	t.nid = &notifyIconData{
 		Wnd:             Handle(t.window),
-		ID:              100,
+		ID:  			 t.trayIconID,
 		Flags:           NIF_MESSAGE,
 		CallbackMessage: t.wmSystrayMessage,
 	}
@@ -1110,4 +1117,73 @@ func showMenuItem(item *MenuItem) {
 
 func resetMenu() {
 	wt.createMenu()
+}
+
+// showNotification displays a system tray notification on Windows
+func showNotification(title, message string) {
+	go func() {
+		if !wt.isReady() {
+			log.Printf("systray error: cannot show notification: tray not ready yet\n")
+			return
+		}
+
+		// Find the systray window handle
+		className, err := syscall.UTF16PtrFromString("SystrayClass")
+		if err != nil {
+			log.Printf("systray error: failed to convert class name: %v\n", err)
+			return
+		}
+		
+		hwnd, _, err := pFindWindow.Call(
+			uintptr(unsafe.Pointer(className)),
+			0,
+		)
+		if hwnd == 0 {
+			log.Printf("systray error: failed to find systray window: %v\n", err)
+			return
+		}
+
+		// Convert strings to UTF-16
+		wTitle, err := syscall.UTF16FromString(title)
+		if err != nil {
+			log.Printf("systray error: failed to convert title: %v\n", err)
+			return
+		}
+
+		wMessage, err := syscall.UTF16FromString(message)
+		if err != nil {
+			log.Printf("systray error: failed to convert message: %v\n", err)
+			return
+		}
+
+		wTip, err := syscall.UTF16FromString("SystrayClass")
+		if err != nil {
+			log.Printf("systray error: failed to convert tooltip: %v\n", err)
+			return
+		}
+
+		// Create notification data
+		nid := notifyIconData{
+			Size:             uint32(unsafe.Sizeof(notifyIconData{})),
+			Wnd:              Handle(hwnd),
+			ID:               wt.trayIconID,
+			Flags:            NIF_INFO | NIF_TIP,
+			CallbackMessage:  WM_USER + 1,
+			InfoFlags:        NIIF_INFO,
+		}
+
+		copy(nid.InfoTitle[:], wTitle)
+		copy(nid.Info[:], wMessage)
+		copy(nid.Tip[:], wTip)
+
+		// Show notification
+		ret, _, _ := pShellNotifyIcon.Call(
+			uintptr(NIM_MODIFY),
+			uintptr(unsafe.Pointer(&nid)),
+		)
+
+		if ret == 0 {
+			log.Printf("systray error: failed to display notification\n")
+		}
+	}()
 }

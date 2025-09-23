@@ -281,3 +281,10 @@ func systrayMenuItemSelected(id uint32) {
 		item.click()
 	}
 }
+
+// ShowNotification displays a system tray notification with the given title and message.
+// This function is currently only implemented on Windows.
+// On macOS and Linux, it will log a warning that the feature is not yet implemented.
+func ShowNotification(title, message string) {
+	showNotification(title, message)
+}
