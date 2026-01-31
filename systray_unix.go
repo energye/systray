@@ -341,7 +341,7 @@ func (*tray) iface() string {
 
 func (t *tray) createPropSpec() map[string]map[string]*prop.Prop {
 	t.lock.Lock()
-	t.lock.Unlock()
+	defer t.lock.Unlock()
 	return map[string]map[string]*prop.Prop{
 		"org.kde.StatusNotifierItem": {
 			"Status": {
@@ -387,7 +387,7 @@ func (t *tray) createPropSpec() map[string]map[string]*prop.Prop {
 				Callback: nil,
 			},
 			"ItemIsMenu": {
-				Value:    true,
+				Value:    false,
 				Writable: false,
 				Emit:     prop.EmitTrue,
 				Callback: nil,
