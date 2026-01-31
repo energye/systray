@@ -53,14 +53,14 @@ withParentMenuId: (int)theParentMenuId
 }
 @end
 
-@interface AppDelegate: NSObject <NSApplicationDelegate>
+@interface SystrayAppDelegate: NSObject <NSApplicationDelegate>
   - (void) add_or_update_menu_item:(MenuItem*) item;
   - (IBAction)menuHandler:(id)sender;
   - (void)statusOnClick:(NSButton *)btn;
   @property (assign) IBOutlet NSWindow *window;
   @end
 
-@implementation AppDelegate {
+@implementation SystrayAppDelegate {
   NSStatusItem *statusItem;
   NSMenu *menu;
   NSCondition* cond;
@@ -73,7 +73,7 @@ withParentMenuId: (int)theParentMenuId
   self->menu = [[NSMenu alloc] init];
   [self->menu setAutoenablesItems: FALSE];
   //[self->statusItem.button setTarget:self];
-  //[self->menu setDelegate:(AppDelegate *)self];
+  //[self->menu setDelegate:(SystrayAppDelegate *)self];
   //[self->statusItem.button setAction:@selector(statusOnClick:)];
   //[self->statusItem setMenu:self->menu]; //注释掉，不然不设置菜单事件也不启作用
   systray_ready();
@@ -246,7 +246,7 @@ NSMenuItem *find_menu_item(NSMenu *ourMenu, NSNumber *menuId) {
 @end
 
 bool internalLoop = false;
-AppDelegate *owner;
+SystrayAppDelegate *owner;
 
 void setInternalLoop(bool i) {
 	internalLoop = i;
@@ -256,7 +256,7 @@ void registerSystray(void) {
   if (!internalLoop) { // with an external loop we don't take ownership of the app
     return;
   }
-  owner = [[AppDelegate alloc] init];
+  owner = [[SystrayAppDelegate alloc] init];
   [[NSApplication sharedApplication] setDelegate:owner];
 
   // A workaround to avoid crashing on macOS versions before Catalina. Somehow
@@ -279,7 +279,7 @@ int nativeLoop(void) {
 }
 
 void nativeStart(void) {
-  owner = [[AppDelegate alloc] init];
+  owner = [[SystrayAppDelegate alloc] init];
   NSNotification *launched = [NSNotification
                                   notificationWithName: NSApplicationDidFinishLaunchingNotification
                                                 object: [NSApplication sharedApplication]];
