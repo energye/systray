@@ -239,6 +239,7 @@ NSMenuItem *find_menu_item(NSMenu *ourMenu, NSNumber *menuId) {
 }
 
 - (void) enable_on_click {
+  [statusItem.button setTarget:self];
   [statusItem.button setAction:@selector(statusOnClick:)];
   [statusItem.button sendActionOn:(NSEventMaskLeftMouseUp|NSEventMaskRightMouseUp)];
 }
