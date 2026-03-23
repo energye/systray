@@ -203,6 +203,16 @@ NSMenuItem *find_menu_item(NSMenu *ourMenu, NSNumber *menuId) {
   }
 }
 
+- (void) remove_menu_item:(NSNumber*) menuId {
+  NSMenuItem* menuItem = find_menu_item(menu, menuId);
+  if (menuItem != NULL) {
+    NSMenu* parentMenu = [menuItem menu];
+    if (parentMenu != NULL) {
+      [parentMenu removeItem:menuItem];
+    }
+  }
+}
+
 - (void) create_menu {
   if(statusItem.menu == NULL){
     [statusItem setMenu:menu];
@@ -346,6 +356,11 @@ void hide_menu_item(int menuId) {
 void show_menu_item(int menuId) {
   NSNumber *mId = [NSNumber numberWithInt:menuId];
   runInMainThread(@selector(show_menu_item:), (id)mId);
+}
+
+void remove_menu_item(int menuId) {
+  NSNumber *mId = [NSNumber numberWithInt:menuId];
+  runInMainThread(@selector(remove_menu_item:), (id)mId);
 }
 
 void reset_menu() {

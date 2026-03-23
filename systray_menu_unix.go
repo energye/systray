@@ -273,6 +273,33 @@ func showMenuItem(item *MenuItem) {
 	}
 }
 
+func removeMenuItem(item *MenuItem) {
+	instance.menuLock.Lock()
+	defer instance.menuLock.Unlock()
+
+	// Find parent layout
+	var parentLayout *menuLayout
+	if item.parent != nil {
+		parentLayout, _ = findLayout(int32(item.parent.id))
+	} else {
+		parentLayout = instance.menu
+	}
+
+	if parentLayout == nil {
+		return
+	}
+
+	// Remove item from parent's children
+	for i, v := range parentLayout.V2 {
+		child := v.Value().(*menuLayout)
+		if child.V0 == int32(item.id) {
+			parentLayout.V2 = append(parentLayout.V2[:i], parentLayout.V2[i+1:]...)
+			refresh()
+			return
+		}
+	}
+}
+
 func refresh() {
 	if instance.conn == nil || instance.menuProps == nil {
 		return
