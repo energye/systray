@@ -1,4 +1,4 @@
-module github.com/energye/systray
+module github.com/Shabbar10/systray
 
 go 1.20
 
