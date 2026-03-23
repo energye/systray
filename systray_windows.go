@@ -1108,6 +1108,24 @@ func showMenuItem(item *MenuItem) {
 	addOrUpdateMenuItem(item)
 }
 
+func removeMenuItem(item *MenuItem) {
+	err := wt.hideMenuItem(uint32(item.id), item.parentId())
+	if err != nil {
+		log.Printf("systray error: unable to removeMenuItem: %s\n", err)
+		return
+	}
+	// Clean up tracking maps
+	wt.muMenuOf.Lock()
+	delete(wt.menuOf, uint32(item.id))
+	wt.muMenuOf.Unlock()
+	wt.muMenuItemIcons.Lock()
+	delete(wt.menuItemIcons, uint32(item.id))
+	wt.muMenuItemIcons.Unlock()
+	wt.muMenus.Lock()
+	delete(wt.menus, uint32(item.id))
+	wt.muMenus.Unlock()
+}
+
 func resetMenu() {
 	wt.createMenu()
 }

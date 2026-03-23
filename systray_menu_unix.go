@@ -9,7 +9,7 @@ import (
 	"github.com/godbus/dbus/v5"
 	"github.com/godbus/dbus/v5/prop"
 
-	"github.com/energye/systray/internal/generated/menu"
+	"github.com/Shabbar10/systray/internal/generated/menu"
 )
 
 // SetIcon sets the icon of a menu item.
@@ -270,6 +270,33 @@ func showMenuItem(item *MenuItem) {
 	if exists {
 		m.V1["visible"] = dbus.MakeVariant(true)
 		refresh()
+	}
+}
+
+func removeMenuItem(item *MenuItem) {
+	instance.menuLock.Lock()
+	defer instance.menuLock.Unlock()
+
+	// Find parent layout
+	var parentLayout *menuLayout
+	if item.parent != nil {
+		parentLayout, _ = findLayout(int32(item.parent.id))
+	} else {
+		parentLayout = instance.menu
+	}
+
+	if parentLayout == nil {
+		return
+	}
+
+	// Remove item from parent's children
+	for i, v := range parentLayout.V2 {
+		child := v.Value().(*menuLayout)
+		if child.V0 == int32(item.id) {
+			parentLayout.V2 = append(parentLayout.V2[:i], parentLayout.V2[i+1:]...)
+			refresh()
+			return
+		}
 	}
 }
 

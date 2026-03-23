@@ -16,8 +16,8 @@ removing the GTK dependency and support for legacy linux system tray.
 ```go
 package main
 
-import "github.com/energye/systray"
-import "github.com/energye/systray/icon"
+import "github.com/Shabbar10/systray"
+import "github.com/Shabbar10/systray/icon"
 
 func main() {
 	systray.Run(onReady, onExit)
@@ -62,7 +62,7 @@ Note: this package requires cgo, so make sure you set `CGO_ENABLED=1` before bui
 Have go v1.12+ or higher installed? Here's an example to get started on macOS or Linux:
 
 ```sh
-git clone https://github.com/energye/systray
+git clone https://github.com/Shabbar10/systray
 cd systray/example
 go run .
 ```

@@ -205,6 +205,18 @@ func (item *MenuItem) AddSubMenuItemCheckbox(title string, tooltip string, check
 	return child
 }
 
+// RemoveSubMenuItem removes a sub-menu item from this menu item.
+// It can be safely invoked from different goroutines.
+func (item *MenuItem) RemoveSubMenuItem(subItem *MenuItem) {
+	if subItem == nil || subItem.parent != item {
+		return
+	}
+	menuItemsLock.Lock()
+	delete(menuItems, subItem.id)
+	menuItemsLock.Unlock()
+	removeMenuItem(subItem)
+}
+
 // SetTitle set the text to display on a menu item
 func (item *MenuItem) SetTitle(title string) {
 	item.title = title
